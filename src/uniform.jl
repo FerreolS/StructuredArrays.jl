@@ -15,7 +15,8 @@ A statement like `A[i] = x` is not implemented as uniform arrays are considered 
 immutable. Call [`MutableUniformArray(val, dims)`](@ref) to create a mutable uniform
 array.
 
-""" UniformArray
+"""
+UniformArray
 
 """
     FastUniformArray(val, args...) -> A
@@ -28,7 +29,8 @@ are specified by `args...`. The difference with an instance of [`UniformArray`](
 that `val` is part of the type signature so that `val` can be known at compile time. A
 typical use is to create all true/false masks.
 
-""" FastUniformArray
+"""
+FastUniformArray
 
 """
     MutableUniformArray(val, args...) -> A
@@ -43,7 +45,8 @@ A statement like `A[i] = x` is allowed to change the value of all the elements o
 hence `i` must represent all indices of `A`. Call [`UniformArray(val, dims)`](@ref) to
 create an immutable uniform array whose element value cannot be changed.
 
-""" MutableUniformArray
+"""
+MutableUniformArray
 
 # Constructors for uniform arrays. For each sub-type, all constructors call the last one
 # that checks and converts the shape arguments and then calls the inner constructor.
@@ -65,7 +68,7 @@ end
 #      easily inferable; only `FastUniformArray{T,N,V}` is. Thus the latter constructors
 #      are explicitly implemented.
 FastUniformArray{T}(::BareBuild, val, inds::I) where {T,N,I<:Inds{N}} =
-    FastUniformArray{T,N,convert(T,val)}(BareBuild(), inds)
+    FastUniformArray{T,N,convert(T, val)}(BareBuild(), inds)
 FastUniformArray{T,N,V}(inds::Vararg{AxisLike,N}) where {T,N,V} = FastUniformArray{T,N,V}(inds)
 FastUniformArray{T,N,V}(inds::NTuple{N,AxisLike}) where {T,N,V} =
     FastUniformArray{T,N,V}(BareBuild(), checked_shape(inds))
@@ -81,20 +84,20 @@ end
 # Constructors for uniform vectors and matrices.
 for K in (:Uniform, :MutableUniform, :FastUniform), (A, N) in ((:Vector, 1), (:Matrix, 2))
     @eval begin
-        $(Symbol(K,A))(val::T, inds::Vararg{AxisLike,$N}) where {T} = $(Symbol(K,:Array)){T}(val, inds)
-        $(Symbol(K,A))(val::T, inds::NTuple{$N,AxisLike}) where {T} = $(Symbol(K,:Array)){T}(val, inds)
-        $(Symbol(K,A)){T}(val, inds::Vararg{AxisLike,$N}) where {T} = $(Symbol(K,:Array)){T}(val, inds)
-        $(Symbol(K,A)){T}(val, inds::NTuple{$N,AxisLike}) where {T} = $(Symbol(K,:Array)){T}(val, inds)
+        $(Symbol(K, A))(val::T, inds::Vararg{AxisLike,$N}) where {T} = $(Symbol(K, :Array)){T}(val, inds)
+        $(Symbol(K, A))(val::T, inds::NTuple{$N,AxisLike}) where {T} = $(Symbol(K, :Array)){T}(val, inds)
+        $(Symbol(K, A)){T}(val, inds::Vararg{AxisLike,$N}) where {T} = $(Symbol(K, :Array)){T}(val, inds)
+        $(Symbol(K, A)){T}(val, inds::NTuple{$N,AxisLike}) where {T} = $(Symbol(K, :Array)){T}(val, inds)
     end
     K === :FastUniform || continue
     @eval begin
-        $(Symbol(K,A)){T,V}(inds::Vararg{AxisLike,$N}) where {T,V} = $(Symbol(K,:Array)){T,$N,V}(inds)
-        $(Symbol(K,A)){T,V}(inds::NTuple{$N,AxisLike}) where {T,V} = $(Symbol(K,:Array)){T,$N,V}(inds)
+        $(Symbol(K, A)){T,V}(inds::Vararg{AxisLike,$N}) where {T,V} = $(Symbol(K, :Array)){T,$N,V}(inds)
+        $(Symbol(K, A)){T,V}(inds::NTuple{$N,AxisLike}) where {T,V} = $(Symbol(K, :Array)){T,$N,V}(inds)
     end
 end
 
 function Base.reverse(A::AbstractUniformArray; dims::Union{Colon,Integer,Tuple{Vararg{Integer}},
-                                                           AbstractVector{<:Integer}} = :)
+    AbstractVector{<:Integer}}=:)
     if !(dims isa Colon)
         for d in dims
             d ≥ one(d) || throw(ArgumentError("dimension must be ≥ 1, got $d"))
@@ -103,7 +106,7 @@ function Base.reverse(A::AbstractUniformArray; dims::Union{Colon,Integer,Tuple{V
     return A
 end
 
-Base.unique(A::AbstractUniformArray; dims::Union{Colon,Integer} = :) = _unique(A, dims)
+Base.unique(A::AbstractUniformArray; dims::Union{Colon,Integer}=:) = _unique(A, dims)
 
 _unique(A::AbstractUniformArray, ::Colon) = [value(A)]
 _unique(A::AbstractUniformArray, dim::Integer) =
@@ -140,13 +143,13 @@ end
 
 # Optimize base reduction methods for uniform arrays.
 for func in (:all, :any,
-             :minimum, :maximum, :extrema,
-             :count, :sum, :prod,
-             :findmin, :findmax)
-    _func = Symbol("_",func)
+    :minimum, :maximum, :extrema,
+    :count, :sum, :prod,
+    :findmin, :findmax)
+    _func = Symbol("_", func)
     @eval begin
-        Base.$(func)(A::AbstractUniformArray; dims = :) = $(_func)(identity, A, dims)
-        Base.$(func)(f::Function, A::AbstractUniformArray; dims = :) = $(_func)(f, A, dims)
+        Base.$(func)(A::AbstractUniformArray; dims=:) = $(_func)(identity, A, dims)
+        Base.$(func)(f::Function, A::AbstractUniformArray; dims=:) = $(_func)(f, A, dims)
     end
     if func ∈ (:all, :any)
         @eval begin
@@ -199,12 +202,12 @@ for func in (:all, :any,
                 else
                     inds = reduce_shape(shape(A), dims)
                     val = f(value(A))
-                    return UniformArray((val,val), inds)
+                    return UniformArray((val, val), inds)
                 end
             end
         end
     elseif func ∈ (:count, :sum, :prod)
-        op = Symbol(_func,"_num_val")
+        op = Symbol(_func, "_num_val")
         @eval begin
             function $(_func)(f, A::AbstractUniformArray, ::Colon)
                 if isempty(A)
@@ -268,8 +271,8 @@ function reduce_shape(inds::Inds{N}, dim::Integer, reduce=reduce_axis) where {N}
 end
 reduce_shape(inds::Inds, dims::Tuple{}) = inds
 function reduce_shape(inds::Inds{N},
-                       dims::Union{AbstractVector{<:Integer},
-                                   Tuple{Integer,Vararg{Integer}}}) where {N}
+    dims::Union{AbstractVector{<:Integer},
+        Tuple{Integer,Vararg{Integer}}}) where {N}
     check_reduce_dim(minimum(dims))
     return ntuple(d -> d ∈ dims ? reduce_axis(inds[d]) : inds[d], Val(N))
 end
@@ -297,7 +300,7 @@ reduce_axis1(x) = reduce_axis(x)
 _uniform(val, ::Tuple{}) = val
 _uniform(val, inds::Tuple) = UniformArray(val, inds)
 
-_sum_num_val(num::Integer, val) = num*val
+_sum_num_val(num::Integer, val) = num * val
 _prod_num_val(num::Integer, val) = val^num
 _count_num_val(num::Integer, val::Bool) = val ? num : zero(num)
 _count_num_val(num::Integer, val) = _unexpected_non_boolean(val)
@@ -329,7 +332,7 @@ end
 
 # Fast view for immutable uniform arrays, may return a 0-dimensional array.
 @inline @propagate_inbounds function Base.view(A::Union{UniformArray,FastUniformArray},
-                                               I::Vararg{Any})
+    I::Vararg{Any})
     return subarray(A, I...)
 end
 
@@ -347,6 +350,16 @@ end
 
 @inline function Base.setindex!(A::MutableUniformArray, x, ::Colon)
     setvalue!(A, x)
+    return A
+end
+
+function Broadcast.broadcasted(::typeof(+), A::MutableUniformArray, x::Number)
+    setvalue!(A, value(A) + x)
+    return A
+end
+
+function Broadcast.broadcasted(::typeof(-), A::MutableUniformArray, x::Number)
+    setvalue!(A, value(A) - x)
     return A
 end
 
@@ -376,7 +389,7 @@ end
 Base.show(io::IO, A::AbstractUniformArray) = show(io, MIME"text/plain"(), A)
 function Base.show(io::IO, ::MIME"text/plain", A::AbstractUniformArray)
     print(io, parameterless(typeof(A)), "{", eltype(A), ",", ndims(A), "}(",
-          value(A), ", ")
+        value(A), ", ")
     print_axes(io, A; as_tuple=true)
     print(io, ")")
     nothing

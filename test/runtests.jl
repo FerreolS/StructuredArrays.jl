@@ -16,15 +16,15 @@ incr_counter(args...; kwds...) = set_counter(get_counter() + 1)
 
 to_mesh_offset(::Type{R}) where {R<:Real} = Converter(to_mesh_offset, R)
 to_mesh_offset(::Type{R}, x::Integer) where {R<:Real} = as(Int, x)
-to_mesh_offset(::Type{R}, x::Real   ) where {R<:Real} = as(R, x)
+to_mesh_offset(::Type{R}, x::Real) where {R<:Real} = as(R, x)
 
 function mesh_node(stp::Union{Number,NTuple{N,Number}}, org::Nothing,
-                   idx::NTuple{N,Int}) where {N}
+    idx::NTuple{N,Int}) where {N}
     return idx .* stp
 end
 
 function mesh_node(stp::Union{Number,NTuple{N,Number}}, org::Union{Real,NTuple{N,Real}},
-                   idx::NTuple{N,Int}) where {N}
+    idx::NTuple{N,Int}) where {N}
     return (idx .- org) .* stp
 end
 
@@ -55,13 +55,13 @@ end
         @test_throws ArgumentError checked_shape(-1)      # bad value
         @test_throws ArgumentError checked_shape(1:2:6)   # bad step
         @test_throws ArgumentError checked_shape("hello") # bad type
-        A = ones(3,4)
+        A = ones(3, 4)
         @test shape(A) === size(A)
         B = OffsetArray(A, OneTo(3), -1:2)
         @test shape(B) in ((1:3, -1:2), (3, -1:2))
 
         # Meta-programming for unrolling.
-        t = (1,3,8)
+        t = (1, 3, 8)
         @test my_mapfoldl(float, =>, t) === mapfoldl(float, =>, t)
         @test my_mapfoldr(float, =>, t) === mapfoldr(float, =>, t)
 
@@ -88,7 +88,7 @@ end
         for (f, v) in ((f1, v1), (f2, v2))
             @test f() === v
             @test f(1) === v
-            @test f(1,2) === v
+            @test f(1, 2) === v
             @test f(; gizmo=3) === v
         end
     end
@@ -96,36 +96,36 @@ end
     uniform_types = (UniformArray, FastUniformArray, MutableUniformArray)
     uniform_values = (1.2, pi, missing, NaN)
     @testset "Comparison of `$U($x,m...)` and `$V($y,n...))`" for U in uniform_types, V in uniform_types, x in uniform_values, y in uniform_values
-        @test isequal(U(x, 0),      V(y, 0)     ) === true # empty arrays of same axes
-        @test isequal(U(x, 0, 1),   V(y, 1:0, 1)) === true # empty arrays of same axes
-        @test isequal(U(x, 0),      V(y, 0, 1)  ) === false # both empty but not same axes
-        @test isequal(U(x, 2, 3),   V(y, 2, 3)  ) === isequal(x, y)
-        @test isequal(U(x, 2, 1:3), V(y, 2, 3)  ) === isequal(x, y)
+        @test isequal(U(x, 0), V(y, 0)) === true # empty arrays of same axes
+        @test isequal(U(x, 0, 1), V(y, 1:0, 1)) === true # empty arrays of same axes
+        @test isequal(U(x, 0), V(y, 0, 1)) === false # both empty but not same axes
+        @test isequal(U(x, 2, 3), V(y, 2, 3)) === isequal(x, y)
+        @test isequal(U(x, 2, 1:3), V(y, 2, 3)) === isequal(x, y)
         @test isequal(U(x, 2, 1:3), V(y, 2, 0:2)) === false # not same axes
 
-        @test (U(x, 0)      == V(y, 0)     ) === true # empty arrays of same axes
-        @test (U(x, 0, 1)   == V(y, 1:0, 1)) === true # empty arrays of same axes
-        @test (U(x, 0)      == V(y, 0, 1)  ) === false # both empty but not same axes
-        @test (U(x, 2, 3)   == V(y, 2, 3)  ) === (x == y)
-        @test (U(x, 2, 1:3) == V(y, 2, 3)  ) === (x == y)
+        @test (U(x, 0) == V(y, 0)) === true # empty arrays of same axes
+        @test (U(x, 0, 1) == V(y, 1:0, 1)) === true # empty arrays of same axes
+        @test (U(x, 0) == V(y, 0, 1)) === false # both empty but not same axes
+        @test (U(x, 2, 3) == V(y, 2, 3)) === (x == y)
+        @test (U(x, 2, 1:3) == V(y, 2, 3)) === (x == y)
         @test (U(x, 2, 1:3) == V(y, 2, 0:2)) === false # not same axes
 
-        @test cmp(U(x, 0), V(y, 0)) ===  0
+        @test cmp(U(x, 0), V(y, 0)) === 0
         @test cmp(U(x, 0), V(y, 1)) === -1
-        @test cmp(U(x, 1), V(y, 0)) ===  1
-        @test cmp(U(x, 1), V(y, 1)) ===  cmp(x, y)
+        @test cmp(U(x, 1), V(y, 0)) === 1
+        @test cmp(U(x, 1), V(y, 1)) === cmp(x, y)
     end
 
     @testset "Uniform arrays ($K)" for K in (UniformArray,
-                                             FastUniformArray,
-                                             MutableUniformArray)
+        FastUniformArray,
+        MutableUniformArray)
         dims = (Int8(2), Int16(3), Int32(4))
         inds = (Int8(0):Int8(1), OneTo{Int16}(3), Int16(-2):Int16(1),)
         @test as_array_size(dims) === map(Int, dims)
         @test as_array_size(inds) === as_array_size(dims)
         N = length(dims)
         vals = (Float64(2.1), UInt32(7), UInt16(11),
-                Float32(-6.2), Float64(pi), Int16(-4))
+            Float32(-6.2), Float64(pi), Int16(-4))
         for k in 1:6
             x = vals[k]
             T = typeof(x)
@@ -148,16 +148,16 @@ end
             @test ndims(B) == N
             @test size(A) == dims
             @test size(B) == dims
-            @test ntuple(i -> size(A,i), ndims(A)+1) == (size(A)..., 1)
-            @test ntuple(i -> size(B,i), ndims(B)+1) == (size(B)..., 1)
-            @test_throws BoundsError size(A,0)
-            @test_throws BoundsError size(B,0)
+            @test ntuple(i -> size(A, i), ndims(A) + 1) == (size(A)..., 1)
+            @test ntuple(i -> size(B, i), ndims(B) + 1) == (size(B)..., 1)
+            @test_throws BoundsError size(A, 0)
+            @test_throws BoundsError size(B, 0)
             @test axes(A) === map(OneTo{Int}, dims)
             @test axes(B) === map(x -> convert_eltype(Int, x), inds)
-            @test ntuple(i -> axes(A,i), ndims(A)+1) == (axes(A)..., OneTo(1))
-            @test ntuple(i -> axes(B,i), ndims(B)+1) == (axes(B)..., OneTo(1))
-            @test_throws BoundsError axes(A,0)
-            @test_throws BoundsError axes(B,0)
+            @test ntuple(i -> axes(A, i), ndims(A) + 1) == (axes(A)..., OneTo(1))
+            @test ntuple(i -> axes(B, i), ndims(B) + 1) == (axes(B)..., OneTo(1))
+            @test_throws BoundsError axes(A, 0)
+            @test_throws BoundsError axes(B, 0)
             @test has_offset_axes(A) == false
             @test has_offset_axes(B) == true
             @test IndexStyle(A) === IndexLinear()
@@ -185,6 +185,12 @@ end
                 @test A[end] == A[1] == x
                 B[firstindex(B):lastindex(B)] = x
                 @test B[end] == B[firstindex(B)] == x
+                A = A .+ one(x)
+                @test A[end] == A[1] == x + one(x)
+                @test typeof(A) === typeof(A .+ one(x))
+                A = A .- one(x)
+                @test A[end] == A[1] == x
+
             else
                 @test_throws Exception A[:] = x
             end
@@ -269,46 +275,48 @@ end
         end
 
         # Aliases.
-        V = K === UniformArray        ? UniformVector :
-            K === FastUniformArray    ? FastUniformVector :
+        V = K === UniformArray ? UniformVector :
+            K === FastUniformArray ? FastUniformVector :
             K === MutableUniformArray ? MutableUniformVector : Nothing
-        M = K === UniformArray        ? UniformMatrix :
-            K === FastUniformArray    ? FastUniformMatrix :
+        M = K === UniformArray ? UniformMatrix :
+            K === FastUniformArray ? FastUniformMatrix :
             K === MutableUniformArray ? MutableUniformMatrix : Nothing
-        let A = #=@inferred=#(K{Float32}(3.0, 5)),
-            B = #=@inferred=#(V(first(A), length(A))),
-            C = #=@inferred=#(V{eltype(A)}(first(A), length(A)))
+        let A = (K{Float32}(3.0, 5)), #=@inferred=#
+            B = (V(first(A), length(A))), #=@inferred=#
+            C = (V{eltype(A)}(first(A), length(A)))
+            #=@inferred=#
             if isimmutable(A)
                 @test B === A
                 @test C === A
             else
-                @test first( B) === first( A)
+                @test first(B) === first(A)
                 @test eltype(B) === eltype(A)
-                @test axes(  B) === axes(  A)
-                @test first( C) === first( A)
+                @test axes(B) === axes(A)
+                @test first(C) === first(A)
                 @test eltype(C) === eltype(A)
-                @test axes(  C) === axes(  A)
+                @test axes(C) === axes(A)
             end
         end
-        let A = #=@inferred=#(K{Float32}(-3.0, 5, 2)),
-            B = #=@inferred=#(M(first(A), size(A))),
-            C = #=@inferred=#(M{eltype(A)}(first(A), size(A)))
+        let A = (K{Float32}(-3.0, 5, 2)), #=@inferred=#
+            B = (M(first(A), size(A))), #=@inferred=#
+            C = (M{eltype(A)}(first(A), size(A)))
+            #=@inferred=#
             if isimmutable(A)
                 @test B === A
                 @test C === A
             else
-                @test first( B) === first( A)
+                @test first(B) === first(A)
                 @test eltype(B) === eltype(A)
-                @test axes(  B) === axes(  A)
-                @test first( C) === first( A)
+                @test axes(B) === axes(A)
+                @test first(C) === first(A)
                 @test eltype(C) === eltype(A)
-                @test axes(  C) === axes(  A)
+                @test axes(C) === axes(A)
             end
         end
 
         # Colon and range indexing of uniform arrays.
-        x = K === UniformArray        ? π :
-            K === FastUniformArray    ? 3.1 :
+        x = K === UniformArray ? π :
+            K === FastUniformArray ? 3.1 :
             K === MutableUniformArray ? Int8(5) : nothing
         A = K(x, dims)
         @test A isa K{typeof(x)}
@@ -331,26 +339,26 @@ end
             funcs = A isa MutableUniformArray ? (getindex,) : (getindex, view)
             @testset "sub-indexing ($f)" for f in funcs
                 R = f === getindex ? Array : K
-                let I = (1,2,3), X = f(A, I...), Y = f(B, I...)
+                let I = (1, 2, 3), X = f(A, I...), Y = f(B, I...)
                     # should yield a scalar when sub-indexing
                     @test X isa (f === getindex ? eltype(A) : K{eltype(A),ndims(Y)})
                     @test X == Y
                 end
-                let I = (1,2,3,1,1), X = f(A, I...), Y = f(B, I...)
+                let I = (1, 2, 3, 1, 1), X = f(A, I...), Y = f(B, I...)
                     # should yield a scalar when sub-indexing
                     @test X isa (f === getindex ? eltype(A) : K{eltype(A),ndims(Y)})
                     @test X == Y
                 end
                 # result is an array
-                let I = (1,2:2,3,1), X = f(A, I...), Y = f(B, I...)
+                let I = (1, 2:2, 3, 1), X = f(A, I...), Y = f(B, I...)
                     @test X isa R{eltype(A),ndims(Y)}
                     @test X == Y
                 end
-                let I = (1,2,3,1,1:1), X = f(A, I...), Y = f(B, I...)
+                let I = (1, 2, 3, 1, 1:1), X = f(A, I...), Y = f(B, I...)
                     @test X isa R{eltype(A),ndims(Y)}
                     @test X == Y
                 end
-                let I = (1,2:2,3,1,1:1), X = f(A, I...), Y = f(B, I...)
+                let I = (1, 2:2, 3, 1, 1:1), X = f(A, I...), Y = f(B, I...)
                     @test X isa R{eltype(A),ndims(Y)}
                     @test X == Y
                 end
@@ -358,31 +366,31 @@ end
                     @test X isa R{eltype(A),ndims(Y)}
                     @test X == Y
                 end
-                let I = (:,:,:), X = f(A, I...), Y = f(B, I...)
+                let I = (:, :, :), X = f(A, I...), Y = f(B, I...)
                     @test X isa R{eltype(A),ndims(Y)}
                     @test axes(X) === axes(A)
                     @test X == Y
                 end
-                let I = ntuple(i -> i:size(A,i), ndims(A)), X = f(A, I...), Y = f(B, I...)
+                let I = ntuple(i -> i:size(A, i), ndims(A)), X = f(A, I...), Y = f(B, I...)
                     @test X isa R{eltype(A),ndims(Y)}
                     @test size(X) == map(length, I)
                     @test X == Y
                 end
-                let I = (:,2,2:4), X = f(A, I...), Y = f(B, I...)
-                    @test X isa R{eltype(A),ndims(A)-1}
+                let I = (:, 2, 2:4), X = f(A, I...), Y = f(B, I...)
+                    @test X isa R{eltype(A),ndims(A) - 1}
                     @test X == Y
                 end
-                let I = (:,[true, false, true],:), X = f(A, I...), Y = f(B, I...)
+                let I = (:, [true, false, true], :), X = f(A, I...), Y = f(B, I...)
                     @test X isa R{eltype(A),ndims(Y)}
                     @test X == Y
                 end
                 if v"1.6" ≤ VERSION ≤ v"1.10"
-                    let I = (:,[true false true],:), X = f(A, I...), Y = f(B, I...)
+                    let I = (:, [true false true], :), X = f(A, I...), Y = f(B, I...)
                         @test X isa R{eltype(A),ndims(Y)}
                         @test X == Y
                     end
                 end
-                let I = (:,[2, 1, 2, 3],:), X = f(A, I...), Y = f(B, I...)
+                let I = (:, [2, 1, 2, 3], :), X = f(A, I...), Y = f(B, I...)
                     @test X isa R{eltype(A),ndims(Y)}
                     @test X == Y
                 end
@@ -425,12 +433,12 @@ end
     end
 
     val_list = (true, false, 0, 3, 3.0)
-    dims_list = (:, 1, 2, 3, (2,), [3,3], (2,1), [3,2],
-                 # NOTE: Specifying dimensions larger than number of dimensions
-                 #       is only supported in Julia ≥ 1.8
-                 VERSION ≥ v"1.8" ? [1,3,4] : [1,3],
-                 1:3)
-    @testset "Optimized methods for uniform arrays (val=$val, shape=$inds)" for val in val_list, inds in ((2,3,4),(2,3,-1:2))
+    dims_list = (:, 1, 2, 3, (2,), [3, 3], (2, 1), [3, 2],
+        # NOTE: Specifying dimensions larger than number of dimensions
+        #       is only supported in Julia ≥ 1.8
+        VERSION ≥ v"1.8" ? [1, 3, 4] : [1, 3],
+        1:3)
+    @testset "Optimized methods for uniform arrays (val=$val, shape=$inds)" for val in val_list, inds in ((2, 3, 4), (2, 3, -1:2))
         A = @inferred(UniformArray(val, inds))
         B = shape_type(A) <: Dims{ndims(A)} ? Array(A) : OffsetArray(A)
         @test A == B
@@ -438,22 +446,22 @@ end
         @testset "... with `dims=$dims`" for dims in dims_list
             f(x) = x > zero(x)
             if dims isa Colon
-                @test all(f,  B) == @inferred(all(f,  A))
-                @test any(f,  B) == @inferred(any(f,  A))
+                @test all(f, B) == @inferred(all(f, A))
+                @test any(f, B) == @inferred(any(f, A))
                 @test extrema(B) == @inferred(extrema(A))
                 @test findmax(B) == @inferred(findmax(A))
                 @test findmin(B) == @inferred(findmin(A))
                 @test maximum(B) == @inferred(maximum(A))
                 @test minimum(B) == @inferred(minimum(A))
-                @test prod(   B) == @inferred(prod(   A))
-                @test sum(    B) == @inferred(sum(    A))
+                @test prod(B) == @inferred(prod(A))
+                @test sum(B) == @inferred(sum(A))
                 if VERSION ≥ v"1.6"
                     @test reverse(B) == @inferred(reverse(A))
                 end
-                @test unique( B) == @inferred(unique( A))
+                @test unique(B) == @inferred(unique(A))
             end
-            @test all(f,  B; dims=dims) == all(f,  A; dims=dims)
-            @test any(f,  B; dims=dims) == any(f,  A; dims=dims)
+            @test all(f, B; dims=dims) == all(f, A; dims=dims)
+            @test any(f, B; dims=dims) == any(f, A; dims=dims)
             # Before Julia 1.8, `extrema(A;dims=d)` with `d` a number does not work for
             # `OffsetArray` instances if they have offset axes.
             if dims isa Colon || !has_offset_axes(A) || VERSION ≥ v"1.8"
@@ -463,8 +471,8 @@ end
             @test findmin(B; dims=dims) == findmin(A; dims=dims)
             @test maximum(B; dims=dims) == maximum(A; dims=dims)
             @test minimum(B; dims=dims) == minimum(A; dims=dims)
-            @test prod(   B; dims=dims) == prod(   A; dims=dims)
-            @test sum(    B; dims=dims) == sum(    A; dims=dims)
+            @test prod(B; dims=dims) == prod(A; dims=dims)
+            @test sum(B; dims=dims) == sum(A; dims=dims)
             if dims isa Integer || ((dims isa Tuple || dims isa Colon) && VERSION ≥ v"1.6")
                 @test reverse(B; dims=dims) == @inferred reverse(A; dims=dims)
             end
@@ -478,71 +486,71 @@ end
         dims = (Int8(3), Int16(4))
         N = length(dims)
         f1(i) = -2i
-        f2(i,j) = (-1 ≤ i - j ≤ 2)
+        f2(i, j) = (-1 ≤ i - j ≤ 2)
         T1 = typeof(f1(1))
-        T2 = typeof(f2(1,1))
+        T2 = typeof(f2(1, 1))
         S1 = IndexLinear
         S2 = IndexCartesian
         for A in (StructuredArray(S2, f2, dims),
-                  StructuredArray(S2(), f2, dims...),
-                  StructuredArray{T2}(S2(), f2, dims),
-                  StructuredArray{T2}(S2, f2, dims...),
-                  StructuredArray{T2,N}(S2, f2, as_array_size(dims)),
-                  StructuredArray{T2,N}(S2(), f2, dims...),
-                  StructuredArray{T2,N,S2}(f2, dims),
-                  StructuredArray{T2,N,S2}(f2, as_array_size(dims)...),
-                  StructuredArray{T2,N,S2}(S2, f2, dims),
-                  StructuredArray{T2,N,S2}(S2(), f2, dims...),
-                  StructuredArray(f2, dims),
-                  StructuredArray(f2, dims...),
-                  StructuredArray{T2}(f2, dims),
-                  StructuredArray{T2}(f2, dims...),
-                  StructuredArray{T2,N}(f2, dims),
-                  StructuredArray{T2,N}(f2, dims...),)
+            StructuredArray(S2(), f2, dims...),
+            StructuredArray{T2}(S2(), f2, dims),
+            StructuredArray{T2}(S2, f2, dims...),
+            StructuredArray{T2,N}(S2, f2, as_array_size(dims)),
+            StructuredArray{T2,N}(S2(), f2, dims...),
+            StructuredArray{T2,N,S2}(f2, dims),
+            StructuredArray{T2,N,S2}(f2, as_array_size(dims)...),
+            StructuredArray{T2,N,S2}(S2, f2, dims),
+            StructuredArray{T2,N,S2}(S2(), f2, dims...),
+            StructuredArray(f2, dims),
+            StructuredArray(f2, dims...),
+            StructuredArray{T2}(f2, dims),
+            StructuredArray{T2}(f2, dims...),
+            StructuredArray{T2,N}(f2, dims),
+            StructuredArray{T2,N}(f2, dims...),)
             @test eltype(A) === T2
             @test ndims(A) == N
             @test size(A) == dims
-            @test ntuple(i -> size(A,i), ndims(A)+1) == (size(A)..., 1)
-            @test_throws BoundsError size(A,0)
+            @test ntuple(i -> size(A, i), ndims(A) + 1) == (size(A)..., 1)
+            @test_throws BoundsError size(A, 0)
             @test axes(A) === map(OneTo, size(A))
-            @test ntuple(i -> axes(A,i), ndims(A)+1) == (axes(A)..., OneTo(1))
-            @test_throws BoundsError axes(A,0)
+            @test ntuple(i -> axes(A, i), ndims(A) + 1) == (axes(A)..., OneTo(1))
+            @test_throws BoundsError axes(A, 0)
             @test has_offset_axes(A) == false
             @test IndexStyle(A) === IndexCartesian()
             @test IndexStyle(typeof(A)) === IndexCartesian()
-            @test A == [f2(i,j) for i in 1:dims[1], j in 1:dims[2]]
+            @test A == [f2(i, j) for i in 1:dims[1], j in 1:dims[2]]
             #@test_throws ErrorException A[1,1] = zero(T)
-            @test_throws BoundsError A[0,1]
+            @test_throws BoundsError A[0, 1]
             if shape_type(A) <: Dims
                 @test A == @inferred Array(A)
             end
             @test A == @inferred OffsetArray(A)
         end
         for A in (StructuredArray(S1, f1, dims),
-                  StructuredArray(S1(), f1, dims...),
-                  StructuredArray{T1}(S1(), f1, dims),
-                  StructuredArray{T1}(S1, f1, dims...),
-                  StructuredArray{T1,N}(S1, f1, dims),
-                  StructuredArray{T1,N}(S1(), f1, dims...),
-                  StructuredArray{T1,N,S1}(f1, dims),
-                  StructuredArray{T1,N,S1}(f1, dims...),
-                  StructuredArray{T1,N,S1}(S1, f1, dims),
-                  StructuredArray{T1,N,S1}(S1(), f1, dims...),)
+            StructuredArray(S1(), f1, dims...),
+            StructuredArray{T1}(S1(), f1, dims),
+            StructuredArray{T1}(S1, f1, dims...),
+            StructuredArray{T1,N}(S1, f1, dims),
+            StructuredArray{T1,N}(S1(), f1, dims...),
+            StructuredArray{T1,N,S1}(f1, dims),
+            StructuredArray{T1,N,S1}(f1, dims...),
+            StructuredArray{T1,N,S1}(S1, f1, dims),
+            StructuredArray{T1,N,S1}(S1(), f1, dims...),)
             I = LinearIndices(A)
             @test eltype(A) === T1
             @test ndims(A) == N
             @test size(A) == dims
-            @test ntuple(i -> size(A,i), ndims(A)+1) == (size(A)..., 1)
-            @test_throws BoundsError size(A,0)
+            @test ntuple(i -> size(A, i), ndims(A) + 1) == (size(A)..., 1)
+            @test_throws BoundsError size(A, 0)
             @test axes(A) === map(OneTo, size(A))
-            @test ntuple(i -> axes(A,i), ndims(A)+1) == (axes(A)..., OneTo(1))
-            @test_throws BoundsError axes(A,0)
+            @test ntuple(i -> axes(A, i), ndims(A) + 1) == (axes(A)..., OneTo(1))
+            @test_throws BoundsError axes(A, 0)
             @test has_offset_axes(A) == false
             @test IndexStyle(A) === IndexLinear()
             @test IndexStyle(typeof(A)) === IndexLinear()
-            @test A == [f1(I[CartesianIndex(i,j)]) for i in 1:dims[1], j in 1:dims[2]]
+            @test A == [f1(I[CartesianIndex(i, j)]) for i in 1:dims[1], j in 1:dims[2]]
             #@test_throws ErrorException A[1,1] = zero(T)
-            @test_throws BoundsError A[0,1]
+            @test_throws BoundsError A[0, 1]
             if shape_type(A) <: Dims
                 @test A == @inferred Array(A)
             end
@@ -550,14 +558,14 @@ end
         end
 
         # Call constructors with illegal dimension.
-        @test_throws ArgumentError StructuredArray{Bool}((i,j) -> i ≥ j, 1, -1)
+        @test_throws ArgumentError StructuredArray{Bool}((i, j) -> i ≥ j, 1, -1)
     end
 
     @testset "Cartesian meshes (step=$stp, origin=$(repr(org)))" for (stp, org) in ((0.1f0, nothing),
-                                                                                    ((0.1f0, 0.2f0), nothing),
-                                                                                    ((1.4, 0.9), (11, 12)),
-                                                                                    ((1//2, 3//4), (10.5, 4.7)),
-                                                                                    ((0.1f0, 0.2f0, 0.3f0), (-1, 0, 1)))
+        ((0.1f0, 0.2f0), nothing),
+        ((1.4, 0.9), (11, 12)),
+        ((1 // 2, 3 // 4), (10.5, 4.7)),
+        ((0.1f0, 0.2f0, 0.3f0), (-1, 0, 1)))
         A = @inferred CartesianMesh(stp, org)
         stp′ = @inferred step(A)
         org′ = @inferred origin(A)
@@ -590,14 +598,14 @@ end
             @test stp′ === convert_real_type(R, stp)
             @test ntuple(Returns(stp′), N) === @inferred step(Tuple, A)
         end
-        I = (( 1,), ( 2, 3), ( 2, 3,-5))[N]
-        J = ((-2,), (-1, 4), ( 5,-2, 1))[N]
-        K = (( 0,), ( 3,-2), (-1, 2,-3))[N]
+        I = ((1,), (2, 3), (2, 3, -5))[N]
+        J = ((-2,), (-1, 4), (5, -2, 1))[N]
+        K = ((0,), (3, -2), (-1, 2, -3))[N]
         A_I = mesh_node(step(A), origin(A), I)
         A_J = mesh_node(step(A), origin(A), J)
         A_K = mesh_node(step(A), origin(A), K)
         T = typeof(A_I)
-        @test T   === @inferred eltype(A)
+        @test T === @inferred eltype(A)
         @test A_I === @inferred A(I)
         @test A_J === @inferred A(J)
         @test A_K === @inferred A(K)
@@ -610,31 +618,31 @@ end
 
         inds = ntuple(Returns(-15:20), N)
         X = @inferred StructuredArray(A, inds)
-        @test X                === @inferred CartesianMeshArray(inds...; step=stp, origin=org)
-        @test N                === @inferred ndims(X)
-        @test typeof(stp′)     === @inferred step_type(X)
-        @test typeof(org′)     === @inferred origin_type(X)
-        @test T                === @inferred eltype(X)
-        @test stp′             === @inferred step(X)
-        @test org′             === @inferred origin(X)
-        @test step(Tuple, A)   === @inferred step(Tuple, X)
+        @test X === @inferred CartesianMeshArray(inds...; step=stp, origin=org)
+        @test N === @inferred ndims(X)
+        @test typeof(stp′) === @inferred step_type(X)
+        @test typeof(org′) === @inferred origin_type(X)
+        @test T === @inferred eltype(X)
+        @test stp′ === @inferred step(X)
+        @test org′ === @inferred origin(X)
+        @test step(Tuple, A) === @inferred step(Tuple, X)
         @test origin(Tuple, A) === @inferred origin(Tuple, X)
-        @test A_I              === @inferred X[I...]
-        @test A_J              === @inferred X[J...]
-        @test A_K              === @inferred X[K...]
-        @test A_I              === @inferred X[CartesianIndex(I)]
-        @test A_J              === @inferred X[CartesianIndex(J)]
-        @test A_K              === @inferred X[CartesianIndex(K)]
+        @test A_I === @inferred X[I...]
+        @test A_J === @inferred X[J...]
+        @test A_K === @inferred X[K...]
+        @test A_I === @inferred X[CartesianIndex(I)]
+        @test A_J === @inferred X[CartesianIndex(J)]
+        @test A_K === @inferred X[CartesianIndex(K)]
         @test startswith(string_from_show(X), "CartesianMeshArray{")
         @test startswith(string_from_show(X, MIME"text/plain"()), "CartesianMeshArray{")
 
         # Unary plus and minus.
         @test @inferred(+A) === A
-        @test @inferred(-A) === @inferred(-one(R)*A)
+        @test @inferred(-A) === @inferred(-one(R) * A)
 
         # Multiplication of mesh by a scalar.
         B = @inferred 3A
-        @test B === @inferred A*3
+        @test B === @inferred A * 3
         @test all(step(B) .≈ (step(A) .* 3))
         @test origin(B) === origin(A)
         @test all(B(I) .≈ (A(I) .* 3))
@@ -642,8 +650,8 @@ end
         @test all(B(K) .≈ (A(K) .* 3))
 
         # Division of mesh by a scalar.
-        B = @inferred A/2
-        @test B === @inferred 2\A
+        B = @inferred A / 2
+        @test B === @inferred 2 \ A
         @test all(step(B) .≈ (step(A) ./ 2))
         @test origin(B) === origin(A)
         @test all(B(I) .≈ (A(I) ./ 2))
@@ -668,23 +676,23 @@ end
 
         # Comparison.
         z = ntuple(Returns(zero(R)), Val(N)) .* step(A)
-        @test !isequal(A, CartesianMesh{N+1}(0.1, nothing))
-        @test isequal(@inferred(A + z),  A)
-        @test isequal(@inferred(z + A),  A)
-        @test isequal(@inferred(A - z),  A)
+        @test !isequal(A, CartesianMesh{N + 1}(0.1, nothing))
+        @test isequal(@inferred(A + z), A)
+        @test isequal(@inferred(z + A), A)
+        @test isequal(@inferred(A - z), A)
         @test isequal(@inferred(z - A), -A)
-        @test A != CartesianMesh{N+1}(0.1, nothing)
-        @test @inferred(A + z) ==  A
-        @test @inferred(z + A) ==  A
-        @test @inferred(A - z) ==  A
+        @test A != CartesianMesh{N + 1}(0.1, nothing)
+        @test @inferred(A + z) == A
+        @test @inferred(z + A) == A
+        @test @inferred(A - z) == A
         @test @inferred(z - A) == -A
 
         if stp isa Number && org isa Union{Nothing,Real}
             A = @inferred CartesianMesh{2}(stp, org)
             @test A isa CartesianMesh{2}
-            I = ( 2, 3)
+            I = (2, 3)
             J = (-1, 4)
-            K = ( 3,-2)
+            K = (3, -2)
             A_I = mesh_node(step(A), origin(A), I)
             A_J = mesh_node(step(A), origin(A), J)
             A_K = mesh_node(step(A), origin(A), K)
