@@ -354,11 +354,13 @@ end
 end
 
 function Broadcast.broadcasted(::typeof(+), A::MutableUniformArray, x::Number)
+    A = copy(A)
     setvalue!(A, value(A) + x)
     return A
 end
 
 function Broadcast.broadcasted(::typeof(-), A::MutableUniformArray, x::Number)
+    A = copy(A)
     setvalue!(A, value(A) - x)
     return A
 end
