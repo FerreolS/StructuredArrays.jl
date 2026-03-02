@@ -31,7 +31,7 @@ struct FastUniformArray{T,N,V,I<:Inds{N}} <: AbstractUniformArray{T,N,I}
 end
 
 mutable struct MutableUniformArray{T,N,I<:Inds{N}} <: AbstractUniformArray{T,N,I}
-    inds::I
+    const inds::I
     val::T
     MutableUniformArray{T}(::BareBuild, val, inds::I) where {T,N,I<:Inds{N}} =
         new{T,N,I}(inds, val)
